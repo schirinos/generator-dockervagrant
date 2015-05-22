@@ -1,4 +1,4 @@
-FROM        debian
+FROM        debian:7.8
 MAINTAINER  Love Nyberg "love.nyberg@lovemusic.se"
 
 # Update the package repository
