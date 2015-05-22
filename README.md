@@ -1,5 +1,5 @@
-Dockerize
-=========
+Docker-Vagrant
+==============
 
 This repo contains files to help create docker images to turn your application into a service container. 
 It also has base Vagrantfiles to setup a local dev environment for your containers.
