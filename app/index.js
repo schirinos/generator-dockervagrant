@@ -1,4 +1,4 @@
-1'use strict';
+'use strict';
 var yeoman = require('yeoman-generator');
 var chalk = require('chalk');
 var yosay = require('yosay');
@@ -14,7 +14,7 @@ module.exports = yeoman.generators.Base.extend({
 
     // Have Yeoman greet the user.
     this.log(yosay(
-      'Welcome to the first-rate' + chalk.red('Dockerize') + ' generator!'+
+      'Welcome to the first-rate' + chalk.red('dockervagrant') + ' generator!'+
       'This generator will help prepare your project for using'+
       'Docker by providing helper scripts and application templates for using Docker with'+
       'different languages and frameworks. Also provides optional Vagrantfile to spin up a local'+
@@ -30,7 +30,7 @@ module.exports = yeoman.generators.Base.extend({
         type: 'list',
         name: 'apptype',
         message: 'What kind of app are you dockerizing (this will determine the Dockerfile generated)?',
-        default: 'php',
+        default: 'generic',
         choices: [{
           name: 'Generic',
           value: 'generic'
@@ -42,16 +42,10 @@ module.exports = yeoman.generators.Base.extend({
           value: 'php'
         }]
       },{
-        type: 'checkbox',
+        type: 'confirm',
         name: 'containers',
         message: 'Would you like any additional containers for development?',
-        choices: [{
-          name: 'PHP pgAdmin',
-          value: 'phppgadmin'
-        }, {
-          name: 'Postgres',
-          value: 'postgres'
-        }]
+        default: false
       },{
         type: 'confirm',
         name: 'vagrant',
@@ -63,6 +57,7 @@ module.exports = yeoman.generators.Base.extend({
       this.apptype = props.apptype;
       this.vagrant = props.vagrant;
       this.appname = props.appname;
+      this.containers = props.containers;
 
       done();
     }.bind(this));
@@ -92,7 +87,7 @@ module.exports = yeoman.generators.Base.extend({
         this.destinationPath('.dockerignore')
       );
       this.fs.copy(
-        this.templatePath('docker_removecontainers.sh'),
+        this.templatePath('docker_remove_containers.sh'),
         this.destinationPath('scripts/docker_remove_containers.sh')
       );
     },
@@ -114,16 +109,18 @@ module.exports = yeoman.generators.Base.extend({
         this.templatePath('provision_before_docker.sh'),
         this.destinationPath('scripts/provision_before_docker.sh')
       );
-    }
+    },
 
     composeSubGenerator: function () {
       // Run subgenerator for the appType specified
-      this.composeWith('dockerize:'+this.apptype, {arguments: this.args});
+      if (this.apptype !== 'generic') {
+        this.composeWith('dockervagrant:'+this.apptype);
+      }
 
       // Run containers subgenerator
-      for (var i = this.containers.length - 1; i >= 0; i--) {
-        this.composeWith('dockerize:containers', {arguments: this.args});
-      };
+      if (this.containers) {
+        this.composeWith('dockervagrant:containers');
+      }
     }
   }
 });

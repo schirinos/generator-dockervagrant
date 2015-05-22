@@ -11,7 +11,7 @@ There are two ways to use this repo.
 
 1. Install as a yeoman generator to automatically copy all files
 ```sh
-$ npm install -g generator-dockerize
+$ npm install -g generator-dockervagrant
  ```
 2. Clone and copy the files needed manually
 
@@ -57,16 +57,16 @@ npm install -g yo
 
 Yeoman travels light. He didn't pack any generators when he moved in. You can think of a generator like a plug-in. You get to choose what type of application you wish to create, such as a Backbone application or even a Chrome extension.
 
-To install generator-dockerize from npm, run:
+To install generator-dockervagrant from npm, run:
 
 ```bash
-npm install -g generator-dockerize
+npm install -g generator-dockervagrant
 ```
 
 Finally, initiate the generator:
 
 ```bash
-yo dockerize
+yo dockervagrant
 ```
 
 ### Getting To Know Yeoman
