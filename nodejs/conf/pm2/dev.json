@@ -1,0 +1,18 @@
+{
+  "apps" : [{
+    "name"              : "myapp",
+    "script"            : "./bin/www",
+    "instances"         : 0,
+    "log_date_format"   : "YYYY-MM-DD",
+    "error_file"        : "/dev/stderr",
+    "out_file"          : "/dev/stdout",
+    "exec_mode"         : "cluster_mode",
+    "port"              : 3000,
+    "watch"             : true,
+    "ignore_watch"      : ["logs"]
+  }, {
+    "name"              : "pm2-http-interface",
+    "script"            : "/usr/lib/node_modules/pm2/lib/HttpInterface.js",
+    "exec_mode"         : "fork_mode"
+  }]
+}

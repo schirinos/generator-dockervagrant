@@ -1,0 +1,75 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+BOX_NAME = ENV['BOX_NAME'] || "phusion/ubuntu-14.04-amd64"
+VERSION = JSON.parse(File.read('package.json'))['version']
+DOCKER_VERSION = '1.3.0'
+APP_NAME = '<%= appname %>';
+
+Vagrant.configure("2") do |config|
+  config.vm.box = BOX_NAME
+  config.ssh.forward_agent = true
+  config.vm.network :forwarded_port, guest: 2375, host: 2375
+
+  # Prefer VMware Fusion before VirtualBox
+  config.vm.provider :vmware_fusion do |vf, override|
+    override.vm.network :private_network, ip: "192.168.66.10"
+  end
+
+  config.vm.provider :virtualbox do |vb, override|
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    vb.name = "#{APP_NAME}_host"
+
+    override.vm.network :private_network, ip: "192.168.33.10"
+  end
+
+  # Enable friendly local hostname for the vm.
+  # Install the plugin with: vagrant plugin install vagrant-hostmanager
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+    config.vm.hostname = "#{APP_NAME}.local"
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+  end
+
+  # Shell provisioning script to setup base vm config
+  config.vm.provision "base", type: "shell", path: "./scripts/provision_base.sh"
+
+  # Shell provisioning script to run custom installs
+  config.vm.provision "custom", type: "shell", path: "./scripts/provision_custom.sh"
+
+  # Always clean up all existing containers
+  config.vm.provision "docker_cleanup", type: "shell", path: "./scripts/docker_remove_containers.sh", run: "always"
+
+  # Shell provisioning script to run custom provision options before docker
+  config.vm.provision "before_docker", type: "shell", path: "./scripts/provision_before_docker.sh", run: "always"
+
+  # Provision docker containers, always reprovision on reload and up.
+  config.vm.provision "docker", run: "always" do |d|
+    d.version = DOCKER_VERSION
+
+    # Build and run image
+    d.build_image "/vagrant", args: "-t #{APP_NAME}:#{VERSION}"
+    d.run "#{APP_NAME}:#{VERSION}",
+      auto_assign_name: false,
+
+      # These arguments are directly passed to the `docker run' command.
+      # Specify ports to expose with: -p 80:3000
+      # or environemnt variables to pass: -e "MYENVVAR=value"
+      args: "--name #{APP_NAME} -v '/vagrant:/app'",
+
+      # The command to pass to the `docker run' command
+      cmd: ""
+  end
+
+  # Fixes upstart script so that docker won't start
+  # until the bridge iterface is ready. Otherwise the
+  # docker daemon will fail to start.
+  pkg_cmd = "sed -i '/start on \(local-filesystems and net-device-up IFACE\!\=lo\)/c\ start on (local-filesystems and static-network-up)' /etc/init/docker.conf"
+  config.vm.provision "upstart", type: "shell", inline: pkg_cmd
+
+  # Shell provisioning script to run custom provision options after docker
+  config.vm.provision "after_docker", type: "shell", path: "./scripts/provision_after_docker.sh", run: "always"
+end
