@@ -1,3 +1,3 @@
 # Inherit base image
-FROM ubuntu
+FROM ubuntu:trusty
 

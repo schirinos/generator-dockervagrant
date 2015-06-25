@@ -1,7 +1,7 @@
 ## -*- docker-image-name: "registry.spotify.net:80/spotify/imagename" -*-
 
 # Inherit base image
-FROM registry:80/spotify/trusty-nodejs:0.10.35
+FROM ubuntu:trusty
 
 # Add application files
 ADD src /app/src

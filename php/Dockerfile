@@ -1,7 +1,7 @@
 ## -*- docker-image-name: "registry.spotify.net:80/spotify/app" -*-
 
 # Inherit base image
-FROM registry:80/spotify/trusty-base:0.6-SNAPSHOT
+FROM ubuntu:trusty
 
 # Install dependencies
 ENV DEBIAN_FRONTEND noninteractive
